@@ -69,7 +69,7 @@ public class SuperDevModeMojo extends AbstractGwtShellMojo
      * Precompile modules.
      * 
      * @parameter default-value="true" expression="${gwt.codeServer.precompile}"
-     * @since 2.6.0-rc1
+     * @since 2.5.1-1
      */
     private boolean precompile;
 

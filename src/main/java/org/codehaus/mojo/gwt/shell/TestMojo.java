@@ -208,6 +208,7 @@ public class TestMojo
      */
     private String batch;
 
+
     /**
      * Causes the log window and browser windows to be displayed; useful for debugging.
      * 
@@ -375,7 +376,7 @@ public class TestMojo
      * The value is one of <tt>simple</tt>, <tt>all</tt>, or <tt>parallel</tt>.
      * 
      * @parameter default-value="simple" expression=${gwt.test.precompile}"
-     * @since 2.6.0-rc1
+     * @since 2.5.1-1
      */
     private String precompile;
 

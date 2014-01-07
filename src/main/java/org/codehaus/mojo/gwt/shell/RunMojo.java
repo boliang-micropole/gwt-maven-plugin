@@ -2,24 +2,22 @@ package org.codehaus.mojo.gwt.shell;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
+ * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
+ * regarding copyright ownership. The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
+ * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import static org.codehaus.plexus.util.AbstractScanner.DEFAULTEXCLUDES;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +29,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -39,8 +39,8 @@ import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
-import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  * Goal which run a GWT module in the GWT Hosted mode.
@@ -135,17 +135,18 @@ public class RunMojo
 
     /**
      * List of System properties to pass when running the hosted mode.
-     *
+     * 
      * @parameter
      * @since 1.2
      */
     private Map<String, String> systemProperties;
-    
+
     /**
      * Copies the contents of warSourceDirectory to hostedWebapp.
      * <p>
      * Can be set from command line using '-Dgwt.copyWebapp=...'
      * </p>
+     * 
      * @parameter default-value="false" expression="${gwt.copyWebapp}"
      * @since 2.1.0-1
      */
@@ -154,14 +155,14 @@ public class RunMojo
     /**
      * set the appengine sdk to use
      * <p>
-     * Artifact will be downloaded with groupId : {@link #appEngineGroupId} 
-     * and artifactId {@link #appEngineArtifactId}
+     * Artifact will be downloaded with groupId : {@link #appEngineGroupId} and artifactId {@link #appEngineArtifactId}
      * <p>
+     * 
      * @parameter default-value="1.3.8" expression="${gwt.appEngineVersion}"
      * @since 2.1.0-1
      */
     private String appEngineVersion;
-    
+
     /**
      * <p>
      * List of {@link Pattern} jars to exclude from the classPath when running
@@ -171,49 +172,62 @@ public class RunMojo
      * @since 2.1.0-1
      */
     private List<String> runClasspathExcludes;
-    
+
     /**
      * <p>
      * Location to find appengine sdk or to unzip downloaded one see {@link #appEngineVersion}
      * </p>
+     * 
      * @parameter default-value="${project.build.directory}/appengine-sdk/" expression="${gwt.appEngineHome}"
      * @since 2.1.0-1
-     */    
+     */
     private File appEngineHome;
-    
+
     /**
      * <p>
      * groupId to download appengine sdk from maven repo
      * </p>
+     * 
      * @parameter default-value="com.google.appengine" expression="${gwt.appEngineGroupId}"
      * @since 2.1.0-1
-     */    
+     */
     private String appEngineGroupId;
 
     /**
      * <p>
      * groupId to download appengine sdk from maven repo
      * </p>
+     * 
      * @parameter default-value="appengine-java-sdk" expression="${gwt.appEngineArtifactId}"
      * @since 2.1.0-1
-     */    
+     */
     private String appEngineArtifactId;
 
     /**
      * To look up Archiver/UnArchiver implementations
+     * 
      * @since 2.1.0-1
      * @component
      */
     protected ArchiverManager archiverManager;
 
-     /**
+    /**
      * Set GWT shell bindAddress.
      * <p>
      * Can be set from command line using '-Dgwt.bindAddress=...'
+     * 
      * @since 2.1.0-1
      * @parameter expression="${gwt.bindAddress}"
      */
     private String bindAddress;
+
+    /**
+     * Precompile modules.
+     * 
+     * @parameter default-value="true" expression="${gwt.codeServer.precompile}"
+     * @since 2.5.1-1
+     */
+    private boolean precompile;
 
     /**
      * EXPERIMENTAL: Cache results of generators with stable output.
@@ -225,7 +239,7 @@ public class RunMojo
 
     /**
      * The compiler's working directory for internal use (must be writeable; defaults to a system temp dir)
-     *
+     * 
      * @parameter
      * @since 2.6.0-rc1
      */
@@ -243,11 +257,11 @@ public class RunMojo
      * Specifies Java source level.
      * <p>
      * The default value depends on the JVM used to launch Maven.
-     *
+     * 
      * @parameter expression="${maven.compiler.source}"
      * @since 2.6.0-rc1
      */
-    private String sourceLevel = System.getProperty("java.specification.version");
+    private String sourceLevel = System.getProperty( "java.specification.version" );
 
     public String getRunTarget()
     {
@@ -339,9 +353,9 @@ public class RunMojo
 
         cmd.withinScope( Artifact.SCOPE_RUNTIME );
         addCompileSourceArtifacts( cmd );
-        addArgumentDeploy(cmd);
+        addArgumentDeploy( cmd );
         addArgumentGen( cmd );
-        addPersistentUnitCache(cmd);
+        addPersistentUnitCache( cmd );
 
         if ( !gwtSdkFirstInClasspath )
         {
@@ -349,24 +363,38 @@ public class RunMojo
         }
 
         cmd.arg( "-war", hostedWebapp.getAbsolutePath() )
-            .arg( "-logLevel", getLogLevel() )
-            .arg( "-port", Integer.toString( getPort() ) )
-            .arg( "-codeServerPort" , Integer.toString( codeServerPort ))
-            .arg( "-startupUrl", getStartupUrl() )
-            .arg( noServer, "-nostartServer" )
-            .arg( !cacheGeneratorResults, "-XnocacheGeneratorResults" );
+        	.arg( "-logLevel", getLogLevel() )
+        	.arg( "-port", Integer.toString( getPort() ) )
+        	.arg( "-codeServerPort", Integer.toString( codeServerPort ) )
+        	.arg( "-startupUrl", getStartupUrl() )
+        	.arg( !cacheGeneratorResults, "-XnocacheGeneratorResults" );
+
+        cmd.arg( !precompile, "-noprecompile" );
+
+        try {
+            Artifact devArtifact = getDevArtifact();
+            VersionRange vr = VersionRange.createFromVersionSpec( "[2.6.0,)" );
+            if ( vr.containsVersion( devArtifact.getVersionRange().getRecommendedVersion() ) ) {
+                cmd.arg( noServer, "-nostartServer" );
+                cmd.arg( "-sourceLevel", sourceLevel );
+            } else {
+                cmd.arg( noServer, "-noserver" );
+            }
+        } catch (InvalidVersionSpecificationException e) {
+            throw new MojoFailureException( "Cannot detect gwt-dev version ", e );
+        }
 
         if ( workDir != null )
-        {
+		{
             cmd.arg( "-workDir", workDir.getAbsolutePath() );
         }
         if ( logDir != null )
-        {
+		{
             cmd.arg( "-logdir", logDir.getAbsolutePath() );
         }
 
         if ( server != null )
-        {
+		{
             cmd.arg( "-server", server );
         }
 
@@ -516,14 +544,17 @@ public class RunMojo
                 }
             }
         }
-    }  
+    }
 
     /**
      * Copied a directory structure with deafault exclusions (.svn, CVS, etc)
-     *
-     * @param sourceDir The source directory to copy, must not be <code>null</code>.
-     * @param destDir The target directory to copy to, must not be <code>null</code>.
-     * @throws java.io.IOException If the directory structure could not be copied.
+     * 
+     * @param sourceDir
+     *            The source directory to copy, must not be <code>null</code>.
+     * @param destDir
+     *            The target directory to copy to, must not be <code>null</code>.
+     * @throws java.io.IOException
+     *             If the directory structure could not be copied.
      */
     private void copyDirectoryStructureIfModified(File sourceDir, File destDir)
             throws IOException {
@@ -609,26 +640,39 @@ public class RunMojo
     }
 
     public int getPort()
-    {
+	{
         return this.port;
     }
 
     /**
-     * @param runTimeOut the runTimeOut to set
+     * @param runTimeOut
+     *            the runTimeOut to set
      */
     public void setRunTimeOut( int runTimeOut )
-    {
+	{
         setTimeOut( runTimeOut );
     }
 
     public void setExecutedProject( MavenProject executedProject )
-    {
+	{
         this.executedProject = executedProject;
     }
 
     @Override
     public MavenProject getProject()
-    {
+	{
         return executedProject;
+    }
+
+    /**
+     * @return
+     * @throws MojoFailureException
+     */
+    private Artifact getDevArtifact() throws MojoFailureException {
+        Artifact devArtifact = getArtifact("com.google.gwt", "gwt-dev");
+        if (null == devArtifact) {
+            throw new MojoFailureException("Required plugin com.google.gwt:gwt-dev not found ");
+        }
+        return devArtifact;
     }
 }

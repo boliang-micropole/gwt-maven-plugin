@@ -32,6 +32,8 @@ import java.util.Iterator;
 
 import org.apache.commons.lang.SystemUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.mojo.gwt.GwtModule;
@@ -352,7 +354,7 @@ public class CompileMojo
     }
 
     private void compile( String[] modules )
-        throws MojoExecutionException
+        throws MojoExecutionException, MojoFailureException
     {
         boolean upToDate = true;
 
@@ -380,7 +382,6 @@ public class CompileMojo
             .arg( validateOnly, "-validateOnly" )
             .arg( disableClassMetadata, "-XnoclassMetadata" )
             .arg( disableCastChecking, "-XnocheckCasts" )
-            .arg( disableRunAsync, "-XnocodeSplitting" )
             .arg( failOnError, "-failOnError" )
             .arg( detailedSoyc, "-XdetailedSoyc" )
             .arg( closureCompiler, "-XclosureCompiler" )
@@ -395,9 +396,23 @@ public class CompileMojo
             .arg( !ordinalizeEnums, "-XnoordinalizeEnums" )
             .arg( !removeDuplicateFunctions, "-XnoremoveDuplicateFunctions" )
             .arg( saveSource, "-saveSource" )
-            .arg( "-sourceLevel", sourceLevel )
         ;
 
+        try
+        {
+            Artifact userArtifact = getUserArtifact();
+            VersionRange vr = VersionRange.createFromVersionSpec( "[2.6.0,)" );
+            if ( vr.containsVersion( userArtifact.getVersionRange().getRecommendedVersion() ) )
+            {
+                cmd.arg( "-sourceLevel", sourceLevel );
+                cmd.arg( disableRunAsync, "-XnocodeSplitting" );
+            }
+        }
+        catch ( InvalidVersionSpecificationException e )
+        {
+            throw new MojoFailureException( "Cannot detect gwt version ", e );
+        }
+        
         if ( saveSourceOutput != null )
         {
             cmd.arg( "-saveSourceOutput", saveSourceOutput.getAbsolutePath() );
@@ -576,4 +591,19 @@ public class CompileMojo
             throw new MojoExecutionException( e.getMessage(), e );
         }
     }
+    
+    /**
+     * @return
+     * @throws MojoFailureException 
+     */
+    private Artifact getUserArtifact()
+        throws MojoFailureException 
+    {
+        Artifact userArtifact = getArtifact( "com.google.gwt", "gwt-user" );
+        if ( null == userArtifact )
+        {
+            throw new MojoFailureException( "Required plugin com.google.gwt:gwt-user not found " );
+        }
+        return userArtifact;
+    }    
 }
